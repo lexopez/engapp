@@ -6,8 +6,8 @@ import {
   IconXCircle, 
   IconChevronRight, 
   IconChevronLeft, 
-  IconInfo, 
-  IconRotateCcw 
+  IconPause,
+  IconPlay
 } from './Icons';
 
 export const QuizActive = ({ 
@@ -23,13 +23,19 @@ export const QuizActive = ({
   // answers map: { [questionIndex]: { selectedIndex, isCorrect, answeredAt } }
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(timeLimitSeconds);
+  const [isPaused, setIsPaused] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [showNavGrid, setShowNavGrid] = useState(false);
 
   const timerRef = useRef(null);
 
-  // Countdown timer effect
+  // Countdown timer effect (pauses when isPaused or showExitConfirm is open)
   useEffect(() => {
+    if (isPaused || showExitConfirm) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -47,7 +53,24 @@ export const QuizActive = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [answers, onTimeUp, timeLimitSeconds]);
+  }, [isPaused, showExitConfirm, answers, onTimeUp, timeLimitSeconds]);
+
+  // Keyboard shortcut listener ('P' to toggle pause, 'Escape' to resume if paused)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        setIsPaused(prev => !prev);
+      } else if (e.key === 'Escape' && isPaused) {
+        e.preventDefault();
+        setIsPaused(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPaused]);
 
   const currentQ = questions[currentIndex];
   const currentAnswer = answers[currentIndex];
@@ -61,7 +84,7 @@ export const QuizActive = ({
   };
 
   const handleSelectOption = (optionIndex) => {
-    if (isAnswered) return; // Prevent changing once answered
+    if (isAnswered || isPaused) return; // Prevent changing once answered or when paused
 
     const isCorrect = optionIndex === currentQ.correctIndex;
     const newAnswers = {
@@ -133,18 +156,25 @@ export const QuizActive = ({
           </h2>
         </div>
 
-        {/* Live Timer Indicator */}
-        <div className="flex items-center gap-3">
+        {/* Live Timer Indicator & Pause / Exit Controls */}
+        <div className="flex items-center gap-2 sm:gap-3">
           <div 
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border font-mono font-bold text-sm sm:text-base transition-all ${
-              isCriticalTime 
-                ? 'bg-rose-500/20 text-rose-400 border-rose-500 animate-pulse'
-                : isDangerTime
-                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                  : 'bg-slate-900 border-slate-800 text-slate-200'
+            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl border font-mono font-bold text-sm sm:text-base transition-all ${
+              isPaused
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20'
+                : isCriticalTime 
+                  ? 'bg-rose-500/20 text-rose-400 border-rose-500 animate-pulse'
+                  : isDangerTime
+                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                    : 'bg-slate-900 border-slate-800 text-slate-200'
             }`}
           >
-            {isDangerTime ? (
+            {isPaused ? (
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                <span className="text-[10px] font-sans font-extrabold uppercase tracking-wider text-amber-400">Paused</span>
+              </span>
+            ) : isDangerTime ? (
               <IconAlertTriangle className="w-4 h-4 text-rose-400 animate-bounce" />
             ) : (
               <IconClock className="w-4 h-4 text-indigo-400" />
@@ -153,8 +183,31 @@ export const QuizActive = ({
           </div>
 
           <button
+            type="button"
+            onClick={() => setIsPaused(prev => !prev)}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              isPaused 
+                ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500/30'
+                : 'bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800 hover:border-slate-700'
+            }`}
+            title={isPaused ? "Resume quiz (or press 'P')" : "Pause timer (or press 'P')"}
+          >
+            {isPaused ? (
+              <>
+                <IconPlay className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                <span>Resume</span>
+              </>
+            ) : (
+              <>
+                <IconPause className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+                <span>Pause</span>
+              </>
+            )}
+          </button>
+
+          <button
             onClick={() => setShowExitConfirm(true)}
-            className="text-xs px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors cursor-pointer"
+            className="text-xs px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors cursor-pointer"
             title="Exit Quiz"
           >
             Exit
@@ -181,7 +234,9 @@ export const QuizActive = ({
       </div>
 
       {/* Main Question Card */}
-      <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-xl backdrop-blur-sm relative">
+      <div className={`rounded-2xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 shadow-xl backdrop-blur-sm relative transition-opacity ${
+        isPaused ? 'pointer-events-none select-none opacity-40' : ''
+      }`}>
         {/* Category & Difficulty Badges */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {currentQ.category && (
@@ -238,10 +293,10 @@ export const QuizActive = ({
               <button
                 key={idx}
                 type="button"
-                disabled={isAnswered}
+                disabled={isAnswered || isPaused}
                 onClick={() => handleSelectOption(idx)}
                 className={`w-full p-4 rounded-xl border text-left flex items-center justify-between gap-4 transition-all duration-200 ${buttonStyle} ${
-                  !isAnswered ? 'cursor-pointer active:scale-[0.99]' : 'cursor-default'
+                  !isAnswered && !isPaused ? 'cursor-pointer active:scale-[0.99]' : 'cursor-default'
                 }`}
               >
                 <div className="flex items-center gap-3.5">
@@ -395,6 +450,100 @@ export const QuizActive = ({
                 </button>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Quiz Paused Overlay Modal */}
+      {isPaused && (
+        <div 
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div 
+            className="max-w-md w-full rounded-2xl bg-slate-900 border border-amber-500/30 p-6 sm:p-7 shadow-2xl text-center relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Background ambient glow */}
+            <div className="absolute -top-16 -left-16 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-16 -right-16 w-36 h-36 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="w-14 h-14 mx-auto mb-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner">
+              <IconPause className="w-7 h-7" />
+            </div>
+
+            <div className="inline-block px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold mb-2">
+              Timer is on hold
+            </div>
+
+            <h3 className="text-xl sm:text-2xl font-black text-white mb-2">
+              Quiz Paused
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">
+              Take a breather! Your timer, selected answers, and question progress are completely safe and preserved.
+            </p>
+
+            {/* Quick stats snapshot */}
+            <div className="grid grid-cols-3 gap-2.5 mb-6 bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-center">
+              <div>
+                <div className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Time Left</div>
+                <div className="text-base sm:text-lg font-mono font-bold text-amber-300 flex items-center justify-center gap-1">
+                  <IconClock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{formatTime(timeLeft)}</span>
+                </div>
+              </div>
+              <div className="border-x border-slate-800">
+                <div className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Current Q</div>
+                <div className="text-base sm:text-lg font-bold text-slate-200">
+                  {currentIndex + 1} <span className="text-xs text-slate-500 font-normal">/ {questions.length}</span>
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Answered</div>
+                <div className="text-base sm:text-lg font-bold text-emerald-400">
+                  {answeredCount} <span className="text-xs text-slate-500 font-normal">/ {questions.length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Primary Action Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsPaused(false);
+              }}
+              className="w-full py-3 px-5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer mb-3 active:scale-[0.99]"
+            >
+              <IconPlay className="w-4 h-4" />
+              <span>Resume Quiz</span>
+              <span className="text-[10px] font-mono bg-emerald-800/60 px-1.5 py-0.5 rounded text-emerald-200">
+                Press P
+              </span>
+            </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPaused(false);
+                  setShowNavGrid(true);
+                }}
+                className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer border border-slate-700"
+              >
+                Question Grid
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitConfirm(true);
+                }}
+                className="py-2 px-3.5 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition-colors cursor-pointer"
+              >
+                Exit Quiz
+              </button>
+            </div>
           </div>
         </div>
       )}

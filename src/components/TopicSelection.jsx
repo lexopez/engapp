@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import { 
-  IconCompass, 
-  IconScale, 
-  IconClock, 
-  IconBook, 
-  IconChevronRight, 
-  IconSparkles, 
-  IconFlame, 
+import {
+  IconCompass,
+  IconScale,
+  IconClock,
+  IconBook,
+  IconChevronRight,
+  IconSparkles,
+  IconFlame,
   IconTrophy,
   IconCheckCircle
 } from './Icons';
 
-export const TopicSelection = ({ 
-  topics, 
-  onStartQuiz, 
-  bestScore, 
-  quizHistory 
+export const TopicSelection = ({
+  topics,
+  onStartQuiz,
+  bestScore,
+  quizHistory
 }) => {
   const [selectedTopicId, setSelectedTopicId] = useState('prepositions');
   const [selectedDifficulty, setSelectedDifficulty] = useState('basic'); // 'basic' | 'intermediate' | 'hard' | 'all'
@@ -157,21 +157,19 @@ export const TopicSelection = ({
                 <div
                   key={topic.id}
                   onClick={() => isActive && setSelectedTopicId(topic.id)}
-                  className={`relative rounded-2xl p-5 sm:p-6 transition-all duration-200 border ${
-                    !isActive 
+                  className={`relative rounded-2xl p-5 sm:p-6 transition-all duration-200 border ${!isActive
                       ? 'bg-slate-900/40 border-slate-800/60 opacity-65 cursor-not-allowed'
                       : isSelected
                         ? 'bg-gradient-to-br from-indigo-950/60 via-slate-900/90 to-slate-900 border-indigo-500/60 shadow-xl shadow-indigo-500/10 ring-1 ring-indigo-500/30 cursor-pointer'
                         : 'bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900/90 cursor-pointer'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                        isActive 
-                          ? 'bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30' 
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isActive
+                          ? 'bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30'
                           : 'bg-slate-800 text-slate-400'
-                      }`}>
+                        }`}>
                         {getTopicIcon(topic.icon)}
                       </div>
 
@@ -190,8 +188,8 @@ export const TopicSelection = ({
 
                         <div className="flex flex-wrap items-center gap-2 mt-3.5">
                           {topic.tags.map((tag, i) => (
-                            <span 
-                              key={i} 
+                            <span
+                              key={i}
                               className="text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800/80 text-slate-300 font-medium"
                             >
                               {tag}
@@ -255,11 +253,10 @@ export const TopicSelection = ({
                             setQuestionCount(Math.min(50, pool.length));
                           }
                         }}
-                        className={`p-3 rounded-xl text-left border transition-all relative overflow-hidden group ${
-                          isSelected
+                        className={`p-3 rounded-xl text-left border transition-all relative overflow-hidden group ${isSelected
                             ? `${lvl.activeColor} shadow-md`
                             : 'bg-slate-800/40 border-slate-700/60 text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between gap-1 mb-1">
                           <div className="flex items-center gap-1.5">
@@ -290,6 +287,7 @@ export const TopicSelection = ({
                     { count: 30, label: '30 Qs', desc: 'Standard' },
                     { count: 50, label: '50 Qs', desc: 'Exam Mode' },
                     { count: 100, label: '100 Qs', desc: 'Marathon' },
+                    { count: 300, label: '300 Qs', desc: 'Absolute Mastery' },
                   ].map((item) => {
                     const isAvailable = availablePool.length >= item.count;
                     return (
@@ -298,13 +296,12 @@ export const TopicSelection = ({
                         type="button"
                         disabled={!isAvailable && availablePool.length < 15}
                         onClick={() => setQuestionCount(item.count)}
-                        className={`p-2 rounded-xl text-center border transition-all ${
-                          questionCount === item.count
+                        className={`p-2 rounded-xl text-center border transition-all ${questionCount === item.count
                             ? 'bg-indigo-600/20 border-indigo-500 text-white font-semibold ring-1 ring-indigo-500/30'
                             : isAvailable
                               ? 'bg-slate-800/40 border-slate-700/60 text-slate-300 hover:bg-slate-800 hover:text-white'
                               : 'bg-slate-900/40 border-slate-800 text-slate-500 cursor-not-allowed opacity-60'
-                        }`}
+                          }`}
                       >
                         <div className="text-xs sm:text-sm font-bold">{item.label}</div>
                         <div className="text-[9px] sm:text-[10px] text-slate-400">{item.desc}</div>
@@ -330,11 +327,10 @@ export const TopicSelection = ({
                       key={mins}
                       type="button"
                       onClick={() => setTimerMinutes(mins)}
-                      className={`py-2 px-1 rounded-xl text-center text-xs font-semibold border transition-all ${
-                        timerMinutes === mins
+                      className={`py-2 px-1 rounded-xl text-center text-xs font-semibold border transition-all ${timerMinutes === mins
                           ? 'bg-indigo-600/20 border-indigo-500 text-white ring-1 ring-indigo-500/30'
                           : 'bg-slate-800/40 border-slate-700/60 text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`}
+                        }`}
                     >
                       {mins} min
                     </button>
@@ -369,11 +365,10 @@ export const TopicSelection = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Difficulty Level:</span>
-                  <span className={`font-semibold capitalize flex items-center gap-1 ${
-                    selectedDifficulty === 'basic' ? 'text-emerald-400' :
-                    selectedDifficulty === 'intermediate' ? 'text-sky-400' :
-                    selectedDifficulty === 'hard' ? 'text-purple-400' : 'text-indigo-400'
-                  }`}>
+                  <span className={`font-semibold capitalize flex items-center gap-1 ${selectedDifficulty === 'basic' ? 'text-emerald-400' :
+                      selectedDifficulty === 'intermediate' ? 'text-sky-400' :
+                        selectedDifficulty === 'hard' ? 'text-purple-400' : 'text-indigo-400'
+                    }`}>
                     {difficultyLevels.find(d => d.id === selectedDifficulty)?.icon} {difficultyLevels.find(d => d.id === selectedDifficulty)?.label}
                   </span>
                 </div>

@@ -106,3 +106,17 @@ export const IconInfo = ({ className = "w-5 h-5" }) => (
     <line x1="12" y1="8" x2="12.01" y2="8" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
+
+export const IconPause = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+export const IconPlay = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" fillOpacity="0.2"/>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+    <circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
